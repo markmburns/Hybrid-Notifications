@@ -3,6 +3,7 @@ mark_burns@dell.com
 v1  
 Display notifactions while device is hybrid joining, then restart at end  
 Toast notifications instead of full screen blocks  
+Speeds up hybrid join by triggering task  
 Scheduled tasks to run regularly === https://oofhours.com/2020/05/19/renaming-autopilot-deployed-hybrid-azure-ad-join-devices/  
 Scheduled task to display notifications to user === https://byteben.com/bb/deploy-service-announcement-toast-notifications-in-windows-10-with-memcm/  
 Custom protocol to restart device === https://www.imab.dk/windows-10-toast-notification-script/  
