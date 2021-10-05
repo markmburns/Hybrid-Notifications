@@ -32,9 +32,6 @@ function Show-Notification {
         $RestartBoolean
     )
     If (([System.Security.Principal.WindowsIdentity]::GetCurrent()).Name -eq "NT AUTHORITY\SYSTEM") {
-        
-
-
         #Created Scheduled Task to run as logged on user
         #Set Unique GUID for the Toast
         If (!($ToastGUID)) {
@@ -42,8 +39,7 @@ function Show-Notification {
         }
         $Task_TimeToRun = (Get-Date).AddSeconds(30).ToString('s')
         $Task_Expiry = (Get-Date).AddSeconds(120).ToString('s')
-        $Task_Action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -File $dest\Hybrid-Notifications.ps1 -paramtitle ""$ToastTitle"" -paramtext ""$ToastText"""
-        
+        $Task_Action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File $dest\Hybrid-Notifications.ps1 -paramtitle ""$ToastTitle"" -paramtext ""$ToastText"""
         $Task_Trigger = New-ScheduledTaskTrigger -Once -At $Task_TimeToRun
         $Task_Trigger.EndBoundary = $Task_Expiry
         $Task_Principal = New-ScheduledTaskPrincipal -GroupId "S-1-5-32-545" -RunLevel Limited
@@ -54,7 +50,6 @@ function Show-Notification {
     }else{
         [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
         $Template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
-
         $RawXml = [xml] $Template.GetXml()
         ($RawXml.toast.visual.binding.text|where {$_.id -eq "1"}).AppendChild($RawXml.CreateTextNode($ToastTitle)) > $null
         ($RawXml.toast.visual.binding.text|where {$_.id -eq "2"}).AppendChild($RawXml.CreateTextNode($ToastText)) > $null
@@ -213,7 +208,7 @@ If($dsregcmdstatus -like "*AzureAdJoined : YES*" -and $dsregcmdstatus -like "*Do
     If ($ESPProcesses.Count -eq 0){
         Write-Host "WWAHost is not running - notify user"
         #notify user
-        Show-Notification -ToastTitle "Hybrid Join Notifications" -ToastText "$env:computername has not yet completed hybrid join process, functionality will be reduced"
+        Show-Notification -ToastTitle "Hybrid Join Notifications" -ToastText "$env:computername has not yet completed hybrid join process, functionality will be reduced e.g. account sync notifications, SSO access, OneDrive & Company Portal login"
     }
     If($existingTask -ne $null){
         Write-Host "Scheduled task already exists - can exit now"
@@ -233,8 +228,7 @@ If($dsregcmdstatus -like "*AzureAdJoined : YES*" -and $dsregcmdstatus -like "*Do
     $triggers += New-ScheduledTaskTrigger -Once -At 1am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 5)
     #Register the scheduled task
     Register-ScheduledTask -User SYSTEM -Action $action -Trigger $triggers -TaskName "Hybrid-Notifications" -Description "Hybrid-Notifications" -Force
-    Write-Host "Scheduled task created."
-        
+    Write-Host "Main scheduled task created."
 }
 Stop-Transcript
 Exit 0
