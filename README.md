@@ -1,4 +1,6 @@
 # Hybrid-Notifications
+mark_burns@dell.com  
+v1  
 Display notifactions while device is hybrid joining, then restart at end  
 Toast notifications instead of full screen blocks  
 Scheduled tasks to run regularly === https://oofhours.com/2020/05/19/renaming-autopilot-deployed-hybrid-azure-ad-join-devices/  
