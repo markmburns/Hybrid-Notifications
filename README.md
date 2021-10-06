@@ -1,7 +1,7 @@
 # Hybrid-Notifications
 mark_burns@dell.com  
 v1  
-Display notifactions while device is hybrid joining, then restart at end  
+Accelerates hybrid join, displays notifications while device is hybrid joining, then prompts for a restart after completion  
 Toast notifications instead of full screen blocks  
 Speeds up hybrid join by triggering Automatic-Device-Join task  
 Scheduled tasks to run regularly === https://oofhours.com/2020/05/19/renaming-autopilot-deployed-hybrid-azure-ad-join-devices/  
