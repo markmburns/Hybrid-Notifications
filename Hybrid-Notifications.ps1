@@ -1,7 +1,8 @@
 <#
 Hybrid-Notifications
+https://github.com/markmburns/Hybrid-Notifications
 mark_burns@dell.com
-v1
+v2 - Silent alarm functionality to get through Focus Assist
 Display notifactions while device is hybrid joining, then restart at end
 Toast notifications instead of full screen blocks
 Speeds up hybrid join by triggering task
@@ -9,7 +10,7 @@ Scheduled tasks to run regularly === https://oofhours.com/2020/05/19/renaming-au
 Scheduled task to display notifications to user === https://byteben.com/bb/deploy-service-announcement-toast-notifications-in-windows-10-with-memcm/
 Custom protocol to restart device === https://www.imab.dk/windows-10-toast-notification-script/
 Replacement for UserESP === https://docs.microsoft.com/en-us/troubleshoot/mem/intune/understand-troubleshoot-esp
-Also recommend script to speed up AD Connect sync
+Also recommend script to speed up AD Connect sync - https://github.com/markmburns/SyncNewAutopilotComputersToAAD
 Win32 install cmd: powershell.exe -noprofile -executionpolicy bypass -file .\Hybrid-Notifications.ps1
 Win32 uninstall: cmd.exe /c del %ProgramData%\Dell\Hybrid-Notifications\Hybrid-Notifications.ps1.tag
 Win32 detection: %ProgramData%\Dell\Hybrid-Notifications\Hybrid-Notifications.ps1.tag
@@ -51,11 +52,36 @@ function Show-Notification {
         [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
         $Template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
         $RawXml = [xml] $Template.GetXml()
+	
+	# Alarm to get through focus assist
+        $scenario = $RawXml.CreateAttribute("scenario")
+        $scenario.Value = "alarm"
+        $audio = $RawXml.CreateElement("audio")
+        $silent = $RawXml.CreateAttribute("silent")
+        $silent.Value = "true"
+        $audio.Attributes.Append($silent) > $null
+        $toast = $RawXml.SelectSingleNode("toast")
+        $toast.Attributes.Append($scenario) > $null
+        $toast.AppendChild($audio) > $null # new audio element
+	
         ($RawXml.toast.visual.binding.text|where {$_.id -eq "1"}).AppendChild($RawXml.CreateTextNode($ToastTitle)) > $null
         ($RawXml.toast.visual.binding.text|where {$_.id -eq "2"}).AppendChild($RawXml.CreateTextNode($ToastText)) > $null
+     
+        $actions = $RawXml.CreateElement("actions")
+        $action2 = $RawXml.CreateElement("action")
+        $button2Type = $RawXml.CreateAttribute("activationType")
+        $button2Type.Value = "system"
+        $button2Arguments = $RawXml.CreateAttribute("arguments")
+        $button2Arguments.Value = "dismiss"
+        $button2Content = $RawXml.CreateAttribute("content")
+        $button2Content.Value = "Dismiss"
+        $action2.Attributes.Append($button2Type) > $null
+        $action2.Attributes.Append($button2Arguments) > $null
+        $action2.Attributes.Append($button2Content) > $null
+            
+
         If($RestartBoolean){
             Write-Host "Adding restart/dismiss buttons"
-            $actions = $RawXml.CreateElement("actions")
             $action1 = $RawXml.CreateElement("action")
             $button1Type = $RawXml.CreateAttribute("activationType")
             $button1Type.Value = "protocol"
@@ -64,26 +90,15 @@ function Show-Notification {
             $button1Content = $RawXml.CreateAttribute("content")
             $button1Content.Value = "Restart"
 
-            $action2 = $RawXml.CreateElement("action")
-            $button2Type = $RawXml.CreateAttribute("activationType")
-            $button2Type.Value = "system"
-            $button2Arguments = $RawXml.CreateAttribute("arguments")
-            $button2Arguments.Value = "dismiss"
-            $button2Content = $RawXml.CreateAttribute("content")
-            $button2Content.Value = "Dismiss"
-
             $action1.Attributes.Append($button1Type) > $null
             $action1.Attributes.Append($button1Arguments) > $null
             $action1.Attributes.Append($button1Content) > $null
 
-            $action2.Attributes.Append($button2Type) > $null
-            $action2.Attributes.Append($button2Arguments) > $null
-            $action2.Attributes.Append($button2Content) > $null
-
             $actions.AppendChild($action1) > $null
-            $actions.AppendChild($action2) > $null
-            $RawXml.DocumentElement.AppendChild($actions) > $null
         }
+        $actions.AppendChild($action2) > $null
+        $RawXml.DocumentElement.AppendChild($actions) > $null
+	
         Write-Host $RawXml.OuterXml
         $SerializedXml = New-Object Windows.Data.Xml.Dom.XmlDocument
         $SerializedXml.LoadXml($RawXml.OuterXml)
@@ -91,7 +106,11 @@ function Show-Notification {
         $Toast = [Windows.UI.Notifications.ToastNotification]::new($SerializedXml)
         $Toast.Tag = "PowerShell"
         $Toast.Group = "PowerShell"
-        $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(4)
+        If($RestartBoolean){
+            $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(120)
+        }else{
+            $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(4)
+        }
 
         $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("PowerShell")
         $Notifier.Show($Toast);
