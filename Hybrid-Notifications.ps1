@@ -3,6 +3,8 @@ Hybrid-Notifications
 https://github.com/markmburns/Hybrid-Notifications
 mark_burns@dell.com
 v2 - Silent alarm functionality to get through Focus Assist
+v3 - 365 day scheduled task duration
+v4 - 2 mins and hide notifications if wwahost is running always
 Display notifactions while device is hybrid joining, then restart at end
 Toast notifications instead of full screen blocks
 Speeds up hybrid join by triggering task
@@ -32,6 +34,15 @@ function Show-Notification {
         $ToastText,
         $RestartBoolean
     )
+    #Check if ESP is running
+    $ESPProcesses = Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue'
+    If ($ESPProcesses.Count -eq 0){
+        Write-Host "WWAHost is not running - notify user"
+        #notify user
+    }else{
+        Write-Host "WWAHost running - skip user notification"
+        return
+    }
     If (([System.Security.Principal.WindowsIdentity]::GetCurrent()).Name -eq "NT AUTHORITY\SYSTEM") {
         #Created Scheduled Task to run as logged on user
         #Set Unique GUID for the Toast
@@ -222,13 +233,7 @@ If($dsregcmdstatus -like "*AzureAdJoined : YES*" -and $dsregcmdstatus -like "*Do
         Write-Host "Starting Automatic-Device-Join task"
         $AutomaticDeviceJoinTask | Start-ScheduledTask
     }
-    #Check if ESP is running
-    $ESPProcesses = Get-Process -Name 'wwahost' -ErrorAction 'SilentlyContinue'
-    If ($ESPProcesses.Count -eq 0){
-        Write-Host "WWAHost is not running - notify user"
-        #notify user
-        Show-Notification -ToastTitle "Hybrid Join Notifications" -ToastText "$env:computername has not yet completed hybrid join process, functionality will be reduced e.g. account sync notifications, SSO access, OneDrive & Company Portal login"
-    }
+    Show-Notification -ToastTitle "Hybrid Join Notifications" -ToastText "$env:computername has not yet completed hybrid join process, functionality will be reduced e.g. account sync notifications, SSO access, OneDrive & Company Portal login"
     If($existingTask -ne $null){
         Write-Host "Scheduled task already exists - can exit now"
         Stop-Transcript
@@ -242,9 +247,9 @@ If($dsregcmdstatus -like "*AzureAdJoined : YES*" -and $dsregcmdstatus -like "*Do
     #Create scheduled task
     $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -ExecutionPolicy bypass -WindowStyle Hidden -File $dest\Hybrid-Notifications.ps1"
     #Create the scheduled tsak trigger
-    $timespan = New-Timespan -minutes 5
+    $timespan = New-Timespan -minutes 2
     $triggers = @()
-    $triggers += New-ScheduledTaskTrigger -Once -At 1am -RepetitionDuration  (New-TimeSpan -Days 1)  -RepetitionInterval  (New-TimeSpan -Minutes 5)
+    $triggers += New-ScheduledTaskTrigger -Once -At 1am -RepetitionDuration  (New-TimeSpan -Days 365)  -RepetitionInterval  (New-TimeSpan -Minutes 2)
     #Register the scheduled task
     Register-ScheduledTask -User SYSTEM -Action $action -Trigger $triggers -TaskName "Hybrid-Notifications" -Description "Hybrid-Notifications" -Force
     Write-Host "Main scheduled task created."
