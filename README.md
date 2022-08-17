@@ -6,13 +6,13 @@ v2 - Silent alarm functionality to get through Focus Assist
 
 v3 - 365 day scheduled task duration
 
-v4 - 2 mins and hide notifications if wwahost is running always
+v4 - 2 mins and hide notifications if wwahost is running
 
 Display notifactions while device is hybrid joining, then restart at end
 
 Toast notifications instead of full screen blocks
 
-Speeds up hybrid join by triggering task
+Speeds up hybrid join by triggering Automatic-Device-Join task 
 
 ![image](https://user-images.githubusercontent.com/88446677/185159523-9324d589-c35b-450b-91c4-199e9b073f47.png)
 
