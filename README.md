@@ -3,7 +3,9 @@
 mark_burns@dell.com
 
 v2 - Silent alarm functionality to get through Focus Assist
+
 v3 - 365 day scheduled task duration
+
 v4 - 2 mins and hide notifications if wwahost is running always
 
 Display notifactions while device is hybrid joining, then restart at end
