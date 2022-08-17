@@ -12,6 +12,8 @@ Toast notifications instead of full screen blocks
 
 Speeds up hybrid join by triggering task
 
+![image](https://user-images.githubusercontent.com/88446677/185159523-9324d589-c35b-450b-91c4-199e9b073f47.png)
+
 Scheduled tasks to run regularly === https://oofhours.com/2020/05/19/renaming-autopilot-deployed-hybrid-azure-ad-join-devices/
 
 Scheduled task to display notifications to user === https://byteben.com/bb/deploy-service-announcement-toast-notifications-in-windows-10-with-memcm/
