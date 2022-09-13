@@ -8,6 +8,8 @@ v3 - 365 day scheduled task duration
 
 v4 - 2 mins and hide notifications if wwahost is running
 
+v5 - remove wwahost as it's not 100% reliable and toast expiry
+
 Display notifactions while device is hybrid joining, then restart at end
 
 Toast notifications instead of full screen blocks
