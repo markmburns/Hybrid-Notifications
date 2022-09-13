@@ -5,6 +5,7 @@ mark_burns@dell.com
 v2 - Silent alarm functionality to get through Focus Assist
 v3 - 365 day scheduled task duration
 v4 - 2 mins and hide notifications if wwahost is running always
+v5 - remove wwahost as it's not 100% reliable and toast expiry
 Display notifactions while device is hybrid joining, then restart at end
 Toast notifications instead of full screen blocks
 Speeds up hybrid join by triggering task
@@ -40,8 +41,8 @@ function Show-Notification {
         Write-Host "WWAHost is not running - notify user"
         #notify user
     }else{
-        Write-Host "WWAHost running - skip user notification"
-        return
+        Write-Host "WWAHost running"
+        #return
     }
     If (([System.Security.Principal.WindowsIdentity]::GetCurrent()).Name -eq "NT AUTHORITY\SYSTEM") {
         #Created Scheduled Task to run as logged on user
@@ -120,7 +121,7 @@ function Show-Notification {
         If($RestartBoolean){
             $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(120)
         }else{
-            $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(4)
+            $Toast.ExpirationTime = [DateTimeOffset]::Now.AddMinutes(2)
         }
 
         $Notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("PowerShell")
