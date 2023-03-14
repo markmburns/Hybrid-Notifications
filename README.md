@@ -28,6 +28,10 @@ Replacement for UserESP === https://docs.microsoft.com/en-us/troubleshoot/mem/in
 
 Also recommend script to speed up AD Connect sync - https://github.com/markmburns/SyncNewAutopilotComputersToAAD
 
+PowerShell Script - Assign to devices
+
+Alternatively use Win32
+
 Win32 install cmd: powershell.exe -noprofile -executionpolicy bypass -file .\Hybrid-Notifications.ps1
 
 Win32 uninstall: cmd.exe /c del %ProgramData%\Dell\Hybrid-Notifications\Hybrid-Notifications.ps1.tag
